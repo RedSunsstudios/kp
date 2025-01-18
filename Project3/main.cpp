@@ -76,6 +76,7 @@ HBITMAP hBack;// хэндл для фонового изображения
 HBITMAP hBattleBack, hPW_butt, hSW_butt, hDW_butt;
 bool L_Mouse, R_Mouse;
 //cекция кода
+//bla
 
 void InitGame()
 {
