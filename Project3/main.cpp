@@ -68,12 +68,21 @@ struct {
 
 POINT p;
 
-enum class GameMode {map,battle,loot, terminal};
+enum class GameMode { map, battle, loot, terminal };
 GameMode game_mode = GameMode::map;
 
 
+typedef struct {
+    float x, y, width, height;
+    HBITMAP hBitmap;//хэндл к спрайту шарика
+} button;
+
+
+button PW_butt, PW_butt_glow, SW_butt, SW_butt_glow, DW_butt, DW_butt_glow, Exit_butt;
 HBITMAP hBack;// хэндл для фонового изображения
-HBITMAP hBattleBack, hPW_butt, hSW_butt, hDW_butt;
+HBITMAP hBattleBack;
+
+
 bool L_Mouse, R_Mouse;
 //cекция кода
 //bla
@@ -85,13 +94,62 @@ void InitGame()
     //результат работы LoadImageA сохраняет в хэндлах битмапов, рисование спрайтов будет произовдиться с помощью этих хэндлов
     ball.hBitmap = (HBITMAP)LoadImageA(NULL, "shar.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     racket.hBitmap = (HBITMAP)LoadImageA(NULL, "raketka.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    hPW_butt = (HBITMAP)LoadImageA(NULL, "pw_butt.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    hSW_butt = (HBITMAP)LoadImageA(NULL, "sw_butt.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    hDW_butt = (HBITMAP)LoadImageA(NULL, "dw_butt.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    splittedEnemy[1][1].hBitmap = (HBITMAP)LoadImageA(NULL, "enemy1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+
+
+
+
+    PW_butt.hBitmap = (HBITMAP)LoadImageA(NULL, "pw_butt.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    PW_butt.height = window.height / 12;
+    PW_butt.width = window.width / 9.5;
+    PW_butt.x = window.width / 2 - PW_butt.width * 1.5;
+    PW_butt.y = window.height / 2 + PW_butt.height * 4.5;
+
+
+
+    SW_butt.hBitmap = (HBITMAP)LoadImageA(NULL, "sw_butt_glow.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    SW_butt.height = window.height / 13;
+    SW_butt.width = window.width / 10.5;
+    SW_butt.x = window.width / 2 - SW_butt.width / 2;
+    SW_butt.y = window.height - SW_butt.height * 1.65;
+
+    DW_butt.hBitmap = (HBITMAP)LoadImageA(NULL, "dw_butt_glow.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    DW_butt.height = window.height / 13;
+    DW_butt.width = window.width / 10.5;
+    DW_butt.x = window.width / 2 + DW_butt.width * 0.6;
+    DW_butt.y = window.height - DW_butt.height * 1.7;
+
+    PW_butt_glow.hBitmap = (HBITMAP)LoadImageA(NULL, "pw_butt_glow.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    PW_butt_glow.height = window.height / 12;
+    PW_butt_glow.width = window.width / 9.5;
+    PW_butt_glow.x = window.width / 2 - PW_butt.width * 1.5;
+    PW_butt_glow.y = window.height / 2 + PW_butt.height * 4.5;
+
+
+
+    SW_butt_glow.hBitmap = (HBITMAP)LoadImageA(NULL, "sw_butt.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    SW_butt_glow.height = window.height / 13;
+    SW_butt_glow.width = window.width / 10.5;
+    SW_butt_glow.x = window.width / 2 - SW_butt.width / 2;
+    SW_butt_glow.y = window.height - SW_butt.height * 1.65;
+
+    DW_butt_glow.hBitmap = (HBITMAP)LoadImageA(NULL, "dw_butt.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    DW_butt_glow.height = window.height / 13;
+    DW_butt_glow.width = window.width / 10.5;
+    DW_butt_glow.x = window.width / 2 + DW_butt.width * 0.6;
+    DW_butt_glow.y = window.height - DW_butt.height * 1.7;
+
+    Exit_butt.hBitmap = (HBITMAP)LoadImageA(NULL, "exit_butt.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    Exit_butt.height = window.height / 30;
+    Exit_butt.width = window.width / 25;
+    Exit_butt.x = 10;
+    Exit_butt.y = 10;
+
+
+    //splittedEnemy[1][1].hBitmap = (HBITMAP)LoadImageA(NULL, "enemy1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     srand(0);
 
-   
+
     int i = 0;
     float cellsize = 50;
     for (int x = 0; x < window.width / cellsize; x++) {
@@ -100,7 +158,7 @@ void InitGame()
                 continue;
             }
             entity Etype;
-            auto rnd = (rand() % 100); 
+            auto rnd = (rand() % 100);
             if (rnd < 97) {
                 Etype = entity::empty;
             }
@@ -111,7 +169,7 @@ void InitGame()
             if (Etype == entity::empty) {
                 continue;
             }
-           enemy1[i].type = Etype;
+            enemy1[i].type = Etype;
             if (enemy1[i].type == entity::enemy)
             {
                 enemy1[i].hBitmap = (HBITMAP)LoadImageA(NULL, "enemycco.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
@@ -124,7 +182,7 @@ void InitGame()
             {
                 enemy1[i].hBitmap = (HBITMAP)LoadImageA(NULL, "terminal.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
             }
-          
+
             enemy1[i].width = cellsize;
             enemy1[i].height = cellsize;
             float screen_X = enemy1[i].width * x;
@@ -142,9 +200,9 @@ void InitGame()
     hBack = (HBITMAP)LoadImageA(NULL, "phon1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     hBattleBack = (HBITMAP)LoadImageA(NULL, "Battlephon1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     //------------------------------------------------------
-   
-    splittedEnemy[3][3].width = 150;
-    splittedEnemy[3][3].height = 100;
+
+   // splittedEnemy[3][3].width = 150;
+   // splittedEnemy[3][3].height = 100;
 
     racket.width = 50;
     racket.height = 50;
@@ -196,9 +254,18 @@ void ProcessInput()
     if (GetAsyncKeyState(VK_RIGHT)) racket.x += racket.speed;
     if (GetAsyncKeyState(VK_UP)) racket.y -= racket.speed;
     if (GetAsyncKeyState(VK_DOWN)) racket.y += racket.speed;
-    if (GetAsyncKeyState(VK_LBUTTON)) L_Mouse = true;
-    if (GetAsyncKeyState(VK_RBUTTON)) R_Mouse = true;
-
+    if (GetAsyncKeyState(VK_LBUTTON)) {
+        L_Mouse = true;
+    }
+    else {
+        L_Mouse = false;
+    }
+    if (GetAsyncKeyState(VK_RBUTTON)) {
+        R_Mouse = true;
+    }
+    else {
+        R_Mouse = false;
+    }
     if (!game.action && GetAsyncKeyState(VK_SPACE))
     {
         game.action = true;
@@ -245,23 +312,48 @@ void ShowTerminal() {
     ShowBitmap(window.context, racket.x - racket.width / 2., racket.y, racket.width, racket.height, racket.hBitmap);
 }
 
-
+bool CheckCollisionMouseBattle(button b);
 void ShowBattle() {
-    ShowBitmap(window.context, 0, 0, window.width , window.height, hBattleBack);//задний фон
-       
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            ShowBitmap(window.context, splittedEnemy[i][j].x, splittedEnemy[i][j].y, splittedEnemy[i][j].height, splittedEnemy[i][j].width, splittedEnemy[i][j].hBitmap);
-        }
-  
+    ShowBitmap(window.context, 0, 0, window.width, window.height, hBattleBack);//задний фон
+
+
+
+    float offset = 0;
+
+    ShowBitmap(window.context, Exit_butt.x, Exit_butt.y + offset, Exit_butt.width, Exit_butt.height, Exit_butt.hBitmap);
+    if (CheckCollisionMouseBattle(PW_butt)) {
+        offset = ((float)CheckCollisionMouseBattle(PW_butt)) * sinf(timeGetTime() * .01);
+        ShowBitmap(window.context, PW_butt_glow.x, PW_butt_glow.y + offset, PW_butt_glow.width, PW_butt_glow.height, PW_butt_glow.hBitmap);
+    }
+    else {
+        offset = ((float)CheckCollisionMouseBattle(PW_butt)) * sinf(timeGetTime() * .01);
+        ShowBitmap(window.context, PW_butt.x, PW_butt.y + offset, PW_butt.width, PW_butt.height, PW_butt.hBitmap);
     }
 
-    ShowBitmap(window.context, 650, 950, window.width / 9.5, window.height / 13, hPW_butt);
-    ShowBitmap(window.context, 850, 950, window.width / 9.5, window.height / 13, hSW_butt);
-    ShowBitmap(window.context, 1050, 955, window.width / 9.5, window.height / 13, hDW_butt);
+    if (CheckCollisionMouseBattle(SW_butt)) {
+
+        offset = ((float)CheckCollisionMouseBattle(SW_butt)) * sinf(timeGetTime() * .01);
+        ShowBitmap(window.context, SW_butt.x, SW_butt.y + offset, SW_butt.width, SW_butt.height, SW_butt.hBitmap);
+    }
+
+    else {
+        offset = ((float)CheckCollisionMouseBattle(PW_butt)) * sinf(timeGetTime() * .01);
+        ShowBitmap(window.context, SW_butt_glow.x, SW_butt_glow.y + offset, SW_butt_glow.width, SW_butt_glow.height, SW_butt_glow.hBitmap);
+
+    }
+
+    if (CheckCollisionMouseBattle(DW_butt)) {
+        offset = ((float)CheckCollisionMouseBattle(DW_butt)) * sinf(timeGetTime() * .01);
+        ShowBitmap(window.context, DW_butt.x, DW_butt.y + offset, DW_butt.width, DW_butt.height, DW_butt.hBitmap);
+    }
+    else {
+
+        offset = ((float)CheckCollisionMouseBattle(DW_butt)) * sinf(timeGetTime() * .01);
+        ShowBitmap(window.context, DW_butt_glow.x, DW_butt_glow.y + offset, DW_butt_glow.width, DW_butt_glow.height, DW_butt_glow.hBitmap);
+    }
 
 
-   
+
 }
 
 
@@ -270,6 +362,7 @@ void ShowBattle() {
 void ShowRacketAndBall()
 {
     ShowBitmap(window.context, 0, 0, window.width, window.height, hBack);//задний фон
+
     ShowBitmap(window.context, racket.x - racket.width / 2., racket.y, racket.width, racket.height, racket.hBitmap);// ракетка игрока
     for (int i = 0; i < enemycout; i++) {
         ShowBitmap(window.context, enemy1[i].x - enemy1[i].width / 2., enemy1[i].y, enemy1[i].width, enemy1[i].height, enemy1[i].hBitmap);
@@ -283,8 +376,8 @@ void ShowRacketAndBall()
         enemy.x = ball.x * .1 + enemy.x * .9;
     }
     ShowBitmap(window.context, p.x, p.y, ball.rad, ball.rad, ball.hBitmap);
-  //  ShowBitmap(window.context, enemy.x - racket.width / 2, 0, racket.width, racket.height, enemy.hBitmap);//ракетка оппонента
-   // ShowBitmap(window.context, ball.x - ball.rad, ball.y - ball.rad, 2 * ball.rad, 2 * ball.rad, ball.hBitmap, true);// шарик
+    //  ShowBitmap(window.context, enemy.x - racket.width / 2, 0, racket.width, racket.height, enemy.hBitmap);//ракетка оппонента
+     // ShowBitmap(window.context, ball.x - ball.rad, ball.y - ball.rad, 2 * ball.rad, 2 * ball.rad, ball.hBitmap, true);// шарик
 }
 
 void LimitRacket()
@@ -294,7 +387,7 @@ void LimitRacket()
     racket.y = max(racket.y, 0.);
     racket.y = min(racket.y, window.height - racket.height);
 }
-   
+
 
 void CheckWalls()
 {
@@ -321,7 +414,7 @@ bool CheckCollision(racket_type r, enemycco e)
     auto dx = r.x - e.x;
     auto dy = r.y - e.y;
     auto dxy = sqrt(dx * dx + dy * dy);
-   
+
     if (dxy < (r.width + e.height) / 2.)
     {
         return true;
@@ -342,13 +435,17 @@ bool CheckCollisionMouse(enemycco e)
     return false;
 }
 
-bool CheckCollisionMouseBattle(sprite s)
-{
-    auto dx = p.x - s.x;
-    auto dy = p.y - s.y;
-    auto dxy = sqrt(dx * dx + dy * dy);
+bool CheckCollisionMouseExit(button Exit_butt) {
+    if (p.x < Exit_butt.x + Exit_butt.width && p.x > Exit_butt.x && p.y < Exit_butt.y + Exit_butt.height && p.y > Exit_butt.y)
+    {
+        return true;
+    }
+    return false;
+}
 
-    if (dxy < (dxy + s.height) / 2.)
+bool CheckCollisionMouseBattle(button b)
+{
+    if (p.x < b.x + b.width && p.x > b.x && p.y < b.y + b.height && p.y > b.y)
     {
         return true;
     }
@@ -405,7 +502,7 @@ void ProcessRoom()
     CheckWalls();
     CheckRoof();
     CheckFloor();
-    
+
     for (int i = 0; i < enemycout; i++) {
         if (CheckCollision(racket, enemy1[i]) == true) {
             if (enemy1[i].type == entity::lootchest) {
@@ -413,8 +510,8 @@ void ProcessRoom()
             }
             if (enemy1[i].type == entity::enemy) {
                 game_mode = GameMode::battle;
-            }                    
-               
+            }
+
             if (enemy1[i].type == entity::terminal) {
                 game_mode = GameMode::terminal;
             }
@@ -453,38 +550,33 @@ void InitWindow()
 
 }
 void BattleGame() {
-  
-
-
-
 
     ShowBattle();//рисуем фон 
-   
+
     BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
     Sleep(20);//ждем 16 милисекунд (1/количество кадров в секунду)
-    for (int i = 0; i < enemycout; i++) {
-        for (int j = 0; j < enemycout; j++) {
-            if (CheckCollisionMouseBattle(splittedEnemy[3][3])) {
-                if (enemy1[i].type == entity::lootchest) {
-                    game_mode = GameMode::loot;
-                }
-                if (enemy1[i].type == entity::enemy) {
-                    game_mode = GameMode::battle;
-                }
+    if (L_Mouse)
+    {
+        if (CheckCollisionMouseBattle(PW_butt)) {
 
-                if (enemy1[i].type == entity::terminal) {
-                    game_mode = GameMode::terminal;
-                }
-            }
+            game_mode = GameMode::map;
 
         }
-       
+        if (CheckCollisionMouseBattle(SW_butt)) {
+            game_mode = GameMode::map;
+        }
+
+        if (CheckCollisionMouseBattle(DW_butt)) {
+            game_mode = GameMode::map;
+        }
+        if (CheckCollisionMouseBattle(Exit_butt)) {
+            game_mode = GameMode::map;
+        }
+
     }
-
-
     ProcessInput();//опрос клавиатуры
     LimitRacket();
-   
+
 }
 
 void TerminalGame() {
@@ -508,24 +600,25 @@ void MapGame() {
     ShowRacketAndBall();//рисуем фон, ракетку и шарик
     ShowScore();
     BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
-    Sleep(20);//ждем 16 милисекунд (1/количество кадров в секунду)
+    Sleep(16);//ждем 16 милисекунд (1/количество кадров в секунду)
     for (int i = 0; i < enemycout; i++) {
-       if (CheckCollisionMouse(enemy1[i]))
-        {
-            if (enemy1[i].type == entity::lootchest) {
-                game_mode = GameMode::loot;
-            }
-            if (enemy1[i].type == entity::enemy) {
-                game_mode = GameMode::battle;
-            }
+        if (L_Mouse == true) {
+            if (CheckCollisionMouse(enemy1[i]))
+            {
+                if (enemy1[i].type == entity::lootchest) {
+                    game_mode = GameMode::loot;
+                }
+                if (enemy1[i].type == entity::enemy) {
+                    game_mode = GameMode::battle;
+                }
 
-            if (enemy1[i].type == entity::terminal) {
-                game_mode = GameMode::terminal;
+                if (enemy1[i].type == entity::terminal) {
+                    game_mode = GameMode::terminal;
+                }
             }
         }
     }
-    
-        ProcessInput();//опрос клавиатуры
+    ProcessInput();//опрос клавиатуры
     LimitRacket();//проверяем, чтобы ракетка не убежала за экран
     // ProcessBall();//перемещаем шарик
     ProcessRoom();//обрабатываем отскоки от стен и каретки, попадание шарика в картетку
@@ -536,7 +629,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_ LPWSTR    lpCmdLine,
     _In_ int       nCmdShow)
 {
-    
+
     InitWindow();//здесь инициализируем все что нужно для рисования в окне
     InitGame();//здесь инициализируем переменные игры
 
@@ -550,9 +643,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         case GameMode::map: MapGame(); break;
         case GameMode::battle: BattleGame(); break;
         case GameMode::loot: LootGame(); break;
-        case GameMode::terminal : TerminalGame(); break;
+        case GameMode::terminal: TerminalGame(); break;
         }
-            
+
 
     }
 
