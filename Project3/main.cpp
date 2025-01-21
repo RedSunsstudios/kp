@@ -5,13 +5,11 @@
 #include "windows.h"
 #include "math.h"
 
-
 // секция данных игры
 typedef struct {
     float x, y, width, height, speed;
     HBITMAP hBitmap;
 } racket_type;
-
 
 racket_type racket;
 enum class entity { empty, enemy, lootchest, terminal };
@@ -31,13 +29,6 @@ typedef struct {
 const int splittedEnemyI = 3;
 const int splittedEnemyj = 3;
 sprite splittedEnemy[3][3];// поменять значения
-
-
-
-
-
-
-
 
 struct {
     float x;
@@ -60,11 +51,6 @@ struct {
     int width, height;//сюда сохраним размеры окна которое создаст программа
 } window;
 
-struct {
-    HWND hWnd_battle;//хэндл окна
-    HDC device_context_battle, context_battle;// два контекста устройства (для буферизации)
-    int width_battle, height_battle;//сюда сохраним размеры окна которое создаст программа
-} window_battle;
 
 POINT p;
 
@@ -75,17 +61,26 @@ GameMode game_mode = GameMode::map;
 typedef struct {
     float x, y, width, height;
     HBITMAP hBitmap;//хэндл к спрайту шарика
+    HBITMAP hBitmapGlow;
 } button;
 
 
-button PW_butt, PW_butt_glow, SW_butt, SW_butt_glow, DW_butt, DW_butt_glow, Exit_butt;
+button PW_butt, SW_butt, DW_butt, Exit_butt;
 HBITMAP hBack;// хэндл для фонового изображения
 HBITMAP hBattleBack;
 
 
 bool L_Mouse, R_Mouse;
+
 //cекция кода
-//bla
+void LoadButton(button &b, const char* imagename, const char* imagenameglow, float x, float y, float w, float h) {
+    b.hBitmap = (HBITMAP)LoadImageA(NULL, imagename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    b.hBitmapGlow = (HBITMAP)LoadImageA(NULL, imagenameglow, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    b.height = w*window.height;
+    b.width = h*window.width;
+    b.x = window.width / 2 - b.width * x;
+    b.y = window.height / 2 + b.height * y;
+ }
 
 void InitGame()
 {
@@ -95,56 +90,15 @@ void InitGame()
     ball.hBitmap = (HBITMAP)LoadImageA(NULL, "shar.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     racket.hBitmap = (HBITMAP)LoadImageA(NULL, "raketka.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
+    // доделать
+    
+    LoadButton(PW_butt, "pw_butt.bmp", "pw_butt_glow.bmp", 1.45, 4.13, .09, .11);
+    LoadButton(SW_butt, "sw_butt.bmp", "sw_butt_glow.bmp", 0.45, 4.13, .09, .11);
+    LoadButton(DW_butt, "dw_butt.bmp", "dw_butt_glow.bmp", -0.55, 4.15, .09, .11);
+    LoadButton(Exit_butt, "Exit_butt.bmp", "Exit_butt_glow.bmp", 12, -24, .02, .04);
 
 
-
-
-    PW_butt.hBitmap = (HBITMAP)LoadImageA(NULL, "pw_butt.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    PW_butt.height = window.height / 12;
-    PW_butt.width = window.width / 9.5;
-    PW_butt.x = window.width / 2 - PW_butt.width * 1.5;
-    PW_butt.y = window.height / 2 + PW_butt.height * 4.5;
-
-
-
-    SW_butt.hBitmap = (HBITMAP)LoadImageA(NULL, "sw_butt_glow.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    SW_butt.height = window.height / 13;
-    SW_butt.width = window.width / 10.5;
-    SW_butt.x = window.width / 2 - SW_butt.width / 2;
-    SW_butt.y = window.height - SW_butt.height * 1.65;
-
-    DW_butt.hBitmap = (HBITMAP)LoadImageA(NULL, "dw_butt_glow.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    DW_butt.height = window.height / 13;
-    DW_butt.width = window.width / 10.5;
-    DW_butt.x = window.width / 2 + DW_butt.width * 0.6;
-    DW_butt.y = window.height - DW_butt.height * 1.7;
-
-    PW_butt_glow.hBitmap = (HBITMAP)LoadImageA(NULL, "pw_butt_glow.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    PW_butt_glow.height = window.height / 12;
-    PW_butt_glow.width = window.width / 9.5;
-    PW_butt_glow.x = window.width / 2 - PW_butt.width * 1.5;
-    PW_butt_glow.y = window.height / 2 + PW_butt.height * 4.5;
-
-
-
-    SW_butt_glow.hBitmap = (HBITMAP)LoadImageA(NULL, "sw_butt.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    SW_butt_glow.height = window.height / 13;
-    SW_butt_glow.width = window.width / 10.5;
-    SW_butt_glow.x = window.width / 2 - SW_butt.width / 2;
-    SW_butt_glow.y = window.height - SW_butt.height * 1.65;
-
-    DW_butt_glow.hBitmap = (HBITMAP)LoadImageA(NULL, "dw_butt.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    DW_butt_glow.height = window.height / 13;
-    DW_butt_glow.width = window.width / 10.5;
-    DW_butt_glow.x = window.width / 2 + DW_butt.width * 0.6;
-    DW_butt_glow.y = window.height - DW_butt.height * 1.7;
-
-    Exit_butt.hBitmap = (HBITMAP)LoadImageA(NULL, "exit_butt.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    Exit_butt.height = window.height / 30;
-    Exit_butt.width = window.width / 25;
-    Exit_butt.x = 10;
-    Exit_butt.y = 10;
-
+   
 
     //splittedEnemy[1][1].hBitmap = (HBITMAP)LoadImageA(NULL, "enemy1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     srand(0);
@@ -313,51 +267,33 @@ void ShowTerminal() {
 }
 
 bool CheckCollisionMouseBattle(button b);
-void ShowBattle() {
-    ShowBitmap(window.context, 0, 0, window.width, window.height, hBattleBack);//задний фон
 
-
-
-    float offset = 0;
-
-    ShowBitmap(window.context, Exit_butt.x, Exit_butt.y + offset, Exit_butt.width, Exit_butt.height, Exit_butt.hBitmap);
-    if (CheckCollisionMouseBattle(PW_butt)) {
-        offset = ((float)CheckCollisionMouseBattle(PW_butt)) * sinf(timeGetTime() * .01);
-        ShowBitmap(window.context, PW_butt_glow.x, PW_butt_glow.y + offset, PW_butt_glow.width, PW_butt_glow.height, PW_butt_glow.hBitmap);
-    }
-    else {
-        offset = ((float)CheckCollisionMouseBattle(PW_butt)) * sinf(timeGetTime() * .01);
-        ShowBitmap(window.context, PW_butt.x, PW_butt.y + offset, PW_butt.width, PW_butt.height, PW_butt.hBitmap);
-    }
-
-    if (CheckCollisionMouseBattle(SW_butt)) {
-
-        offset = ((float)CheckCollisionMouseBattle(SW_butt)) * sinf(timeGetTime() * .01);
-        ShowBitmap(window.context, SW_butt.x, SW_butt.y + offset, SW_butt.width, SW_butt.height, SW_butt.hBitmap);
-    }
-
-    else {
-        offset = ((float)CheckCollisionMouseBattle(PW_butt)) * sinf(timeGetTime() * .01);
-        ShowBitmap(window.context, SW_butt_glow.x, SW_butt_glow.y + offset, SW_butt_glow.width, SW_butt_glow.height, SW_butt_glow.hBitmap);
-
-    }
-
-    if (CheckCollisionMouseBattle(DW_butt)) {
-        offset = ((float)CheckCollisionMouseBattle(DW_butt)) * sinf(timeGetTime() * .01);
-        ShowBitmap(window.context, DW_butt.x, DW_butt.y + offset, DW_butt.width, DW_butt.height, DW_butt.hBitmap);
-    }
-    else {
-
-        offset = ((float)CheckCollisionMouseBattle(DW_butt)) * sinf(timeGetTime() * .01);
-        ShowBitmap(window.context, DW_butt_glow.x, DW_butt_glow.y + offset, DW_butt_glow.width, DW_butt_glow.height, DW_butt_glow.hBitmap);
-    }
-
-
-
+bool ShowButton(button &bt)
+{
+    bool pw_collision = CheckCollisionMouseBattle(bt);
+    float offset = (float)pw_collision * sinf(timeGetTime() * .01);
+    ShowBitmap(window.context, bt.x, bt.y + offset, bt.width, bt.height, pw_collision ? bt.hBitmapGlow : bt.hBitmap);
+    return pw_collision;
 }
 
+void ShowBattle() {
+  
+    ShowBitmap(window.context, 0, 0, window.width, window.height, hBattleBack);//задний фон
 
+    bool pw = ShowButton(PW_butt);
+    bool sw = ShowButton(SW_butt);
+    bool dw = ShowButton(DW_butt);
+    bool exit = ShowButton(Exit_butt);
 
+    if (L_Mouse)
+    {
+        if (pw)
+        {
+
+        }
+    }
+
+ }
 
 void ShowRacketAndBall()
 {
